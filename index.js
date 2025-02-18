@@ -3,5 +3,5 @@ import "dotenv/config";
 import { config } from "dotenv"; 
 config(); 
 
-import { iniciarServidor } from './configs/server.js'; 
+import { iniciarServidor } from './configs/server.js';
 iniciarServidor(); 

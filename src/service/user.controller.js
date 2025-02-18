@@ -1,57 +1,106 @@
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import User from '../models/User.js';
+import { response, request } from "express";
+import { hash } from "argon2";
+import User from "./user.model.js";
 
-// Obtener todos los usuarios
-export const getUsers = async (req, res) => {
+
+export const getUsers = async (req= request, res = response) => {
     try {
-        const users = await User.find().select('-password'); // No devolver contraseñas
-        res.json(users);
+        const {limite = 1, desde= 0 } = req.query;
+        const query = {estado: true};
+
+        const [total, users] = await Promise.all([
+            User.countDocuments(query),
+            User.find(query)
+            .skip(Number(desde))
+            .limit(Number(limite))
+        ]);
+
+        res.status(200).json({
+            success: true,
+            total,
+            users
+        })
+
     } catch (error) {
-        res.status(500).json({ message: 'Error al obtener los usuarios', error });
+        res.status(500).json({
+            success: false, 
+            msg: 'Error getting Users',
+            error: error.message
+        })
     }
-};
+}
 
-// Obtener un usuario por ID
-export const getUserById = async (req, res) => {
+export const getUserById = async (req,res) => {
     try {
-        const user = await User.findById(req.params.id).select('-password');
-        if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
+        const{id}=req.params;
 
-        res.json(user);
+        const user= await User.findById(id);
+
+        if(!user){
+            return res.status(404).json({
+                success: false,
+                msg:'User not found'
+            })
+        }
+        res.status(200).json({
+            success: true,
+            user
+        })
+
     } catch (error) {
-        res.status(500).json({ message: 'Error al obtener el usuario', error });
+        res.status(500).json({
+            success: false,
+            msg: 'Error getting User',
+            error: error.message
+        })
     }
-};
+}
 
-// Actualizar un usuario
-export const updateUser = async (req, res) => {
+export const updateUser = async(req,res = response)=>{
     try {
-        const { name, email, password } = req.body;
-        let updateData = { name, email };
+        
+        const {id} = req.params;
+        const { _id,password,email, ...data }= req.body;
 
-        if (password) {
-            const hashedPassword = await bcrypt.hash(password, 10);
-            updateData.password = hashedPassword;
+        if(password){
+            data.password = await hash(password)
         }
 
-        const user = await User.findByIdAndUpdate(req.params.id, updateData, { new: true }).select('-password');
-        if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
+        const user = await User.findByIdAndUpdate(id, data, {new: true});
 
-        res.json({ message: 'Usuario actualizado', user });
+        res.status(200).json({
+            success: true,
+            msg:'Usuario actualizado',
+            user
+        })
+
     } catch (error) {
-        res.status(500).json({ message: 'Error al actualizar el usuario', error });
+        res.status(500).json({
+            success: false,
+            msg:'Error al actualizar usuario',
+            error
+        })
     }
-};
+}
 
-// Eliminar un usuario
 export const deleteUser = async (req, res) => {
     try {
-        const user = await User.findByIdAndDelete(req.params.id);
-        if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
+        const { id } = req.params;
+        const user = await User.findByIdAndUpdate(id, { estado: false }, { new: true });
+        const authenticateUser = req.user;
 
-        res.json({ message: 'Usuario eliminado' });
+        res.status(200).json({
+            success: true,
+            msg: 'Usuario desactivado',
+            user,
+            authenticateUser
+        });
+
     } catch (error) {
-        res.status(500).json({ message: 'Error al eliminar el usuario', error });
+        res.status(500).json({
+            success: false,
+            msg: 'Error al desactivar usuario',
+            error
+        });
     }
 };

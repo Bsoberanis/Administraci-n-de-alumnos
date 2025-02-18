@@ -1,27 +1,18 @@
-import { check } from 'express-validator';
+import { body } from "express-validator"
+import { validarCampos } from "./validar-campos.js"
+import { existenteEmail, esRoleValido } from "../helpers/db-validator.js"
 
-export const validarRegistro = [
-    check('name', 'El nombre es obligatorio').not().isEmpty(),
-    check('email', 'El correo electrónico no es válido').isEmail(),
-    check('password', 'La contraseña debe tener al menos 6 caracteres').isLength({ min: 6 }),
-];
+export const registerValidator = [
+    body("name", "The name is required").not().isEmpty(),
+    body("surname", "The surname is required").not().isEmpty(),
+    body("email", "Must enter a valid email").isEmail(),
+    body("email").custom(existenteEmail),
+    body('role').custom(esRoleValido),
+    body("password", "Password must be at least 6 characters").isLength({min:8}),
+    validarCampos
+]
 
-export const validarLogin = [
-    check('email', 'El correo electrónico es obligatorio').isEmail(),
-    check('password', 'La contraseña es obligatoria').not().isEmpty(),
-];
-
-export const validarCurso = [
-    check('title', 'El título es obligatorio').not().isEmpty(),
-    check('description', 'La descripción es obligatoria').not().isEmpty(),
-];
-
-export const validarInscripcionCurso = [
-    check('courseId', 'El ID del curso es obligatorio').not().isEmpty(),
-];
-
-export const validarEdicionPerfil = [
-    check('name', 'El nombre no puede estar vacío').optional().not().isEmpty(),
-    check('email', 'Debe ser un correo válido').optional().isEmail(),
-];
+export const loginValidator = [
+    
+]
 

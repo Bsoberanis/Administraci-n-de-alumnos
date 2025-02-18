@@ -1,11 +1,12 @@
 import rateLimit from 'express-rate-limit';
 
-export const limitRequests = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutos
-    max: 100, // Límite de 100 peticiones por IP
-    message: {
-        status: 429,
-        message: 'Demasiadas peticiones desde esta IP, por favor intenta más tarde.'
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    message:{
+        success: false,
+        msg: "Demasiadas peticiones de esta IP, por favor intente ingresar de nuevo en otro momento."
     }
 });
 
+export default limiter;

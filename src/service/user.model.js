@@ -1,30 +1,57 @@
-import mongoose from 'mongoose';
+import { Schema, model } from "mongoose";
 
-export const UserSchema = new mongoose.Schema({
-    name: {
+const UserSchema = Schema({
+    name:{
         type: String,
-        required: [true, 'El nombre es obligatorio']
+        required: true,
+        maxLenght: [25, "Cannot be overcome 25 characters"]
     },
-    email: {
+    surname:{
         type: String,
-        required: [true, 'El correo es obligatorio'],
+        required: true,
+        maxLenght: [25, "Cannot be overcome 25 characters"]
+    },
+    username:{
+        type: String,
+        required: true,
+        maxLenght: [25, "Cannot be overcome 25 characters"]
+    },
+    email:{
+        type: String,
+        required: [true, "Emai is required"],
         unique: true
     },
-    password: {
+    password:{
         type: String,
-        required: [true, 'La contraseña es obligatoria']
+        required: [true, "Password is required"],
+        maxLenght: [8, "Password min required 8 characters"]
     },
-    role: {
+    phone:{
         type: String,
-        enum: ['STUDENT_ROLE', 'TEACHER_ROLE'],
-        default: 'STUDENT_ROLE'
+        minLenght: 8,
+        maxLenght: 8,
     },
-    courses: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Course'
-    }]
-}, {
-    timestamps: true
-});
+    role:{
+        type: String,
+        required: true,
+        enum: ["TEACHER_ROLE","STUDENT_ROLE"]
+    },
+    estado:{
+        type: Boolean,
+        default: true
+    }
+},
+{
+    timestamps:true,
+    versionKey: false
+})
+
+UserSchema.methods.toJson = function(){
+    const {__v, password,_id,...usuario}= this.toObject();
+    usuario.uid = _id;
+    return usuario
+}
+
+export default model('User', UserSchema);
 
 

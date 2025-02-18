@@ -1,21 +1,29 @@
-import express from 'express';
-import { register, login, enrollCourse, viewEnrolledCourses, updateProfile, deleteProfile, createCourse, editCourse, deleteCourse } from '../controllers/auth.controller.js';
-import authMiddleware from '../middlewares/authMiddleware.js';
+import Role from "../role/role.model.js";
+import User from "../user/user.model.js";
 
-export const router = express.Router();
+export const esRoleValido = async(role = '')=>{
+    const existeRol = await Role.findOne({role});
 
-router.post('/register', register);
-router.post('/login', login);
+    if(!existeRol){
+        throw new Error(`El rol ${role} no existe en la base de datos`);
+    }
+}
 
-router.post('/enroll', authMiddleware, enrollCourse);
-router.get('/courses', authMiddleware, viewEnrolledCourses);
-router.put('/profile', authMiddleware, updateProfile);
-router.delete('/profile', authMiddleware, deleteProfile);
+export const existenteEmail = async(correo ='')=>{
 
-router.post('/course', authMiddleware, createCourse);
-router.put('/course', authMiddleware, editCourse);
-router.delete('/course', authMiddleware, deleteCourse);
+    const existeEmail = await User.findOne({correo});
 
+    if(existeEmail){
+        throw new Error(`El correo ${correo} ya esta registrado`)
+    }
+}
 
+export const existeUsuarioById= async(id= '')=>{
+    const existeUsuario = await User.findById(id);
+
+    if(!existeUsuario){
+        throw new Error(`El ID ${id} no existe`);
+    }
+}
 
 
